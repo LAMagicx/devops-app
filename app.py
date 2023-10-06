@@ -11,7 +11,7 @@ def main():
     return "Hello there.."
 
 def get_database():
-    CONNECTION_STRING = "mongodb://localhost:27017/devops-app-DB"
+    CONNECTION_STRING = "mongodb://localhost:27016/devops-app-DB"
     client = MongoClient(CONNECTION_STRING)
     return client['devops-app-DB']
 
