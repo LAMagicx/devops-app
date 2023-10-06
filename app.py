@@ -8,9 +8,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def main():
-    dbname = get_database()
-    collection_name = dbname["test-collection"]
-    insert_data(collection_name)
     return "Hello there.."
 
 def get_database():
@@ -40,3 +37,6 @@ def insert_data(collection_name):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+    dbname = get_database()
+    collection_name = dbname["test-collection"]
+    insert_data(collection_name)
