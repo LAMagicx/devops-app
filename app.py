@@ -1,42 +1,31 @@
 from flask import Flask
 
 import pymongo
+import pandas as pd
 from pymongo import MongoClient
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def main():
-    return "Hello there.."
+    client = connect_to_database()
+    db = client["Spotify"]
+    attribs = db["attributes"]
+    count = attribs.count_documents({'danceability': {'$gt': 0.4}})
+    return f"{count}"
 
-def get_database():
-    CONNECTION_STRING = "mongodb://localhost:27017/devops-app-DB"
-    client = MongoClient(CONNECTION_STRING)
-    return client['devops-app-DB']
+def connect_to_database():
+    CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
+    return MongoClient(CONNECTION_STRING)
 
-def insert_data(collection_name):
-    item_1 = {
-    "_id" : "U1IT00001",
-    "item_name" : "Blender",
-    "max_discount" : "10%",
-    "batch_number" : "RR450020FRG",
-    "price" : 340,
-    "category" : "kitchen appliance"
-    }
+def insert_csv_data(csv_path, db, collection_name):
+    collection = db[collection_name]
+    data = pd.read_csv(csv_path)
+    collection.insert_many(data.to_dict(orient="records"))
 
-    item_2 = {
-    "_id" : "U1IT00002",
-    "item_name" : "Egg",
-    "category" : "food",
-    "quantity" : 12,
-    "price" : 36,
-    "item_description" : "brown country eggs"
-    }
-    collection_name.insert_many([item_1,item_2])
 
 if __name__ == "__main__":
+    client = connect_to_database()
+    db = client["Spotify"]
+    insert_csv_data("Spotify_Song_Attributes.csv", db, "attributes")
     app.run(host="0.0.0.0", port=5000)
-    dbname = get_database()
-    collection_name = dbname["test-collection"]
-    insert_data(collection_name)
