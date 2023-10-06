@@ -4,6 +4,8 @@
 
 please change the path in .env
 
+then run `docker compose up`
+
 ### Todo
 
 - add mongodb client to the app
