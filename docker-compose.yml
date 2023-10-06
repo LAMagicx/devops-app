@@ -1,4 +1,14 @@
+version: "3.1"
 services:
+  app:
+    build: .
+    command: python3 -u app.py
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    links:
+      - mongo
   mongo:
     image: mongo
     restart: always
@@ -6,7 +16,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
     ports:
-      - 27017:27017 
+      - 27016:27017 
     volumes:
       - db:${REL_PATH}/db
 volumes:

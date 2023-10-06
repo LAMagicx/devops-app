@@ -14,6 +14,7 @@ def main():
     count = attribs.count_documents({'danceability': {'$gt': 0.4}})
     return f"{count}"
 
+
 def connect_to_database():
     CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
     return MongoClient(CONNECTION_STRING)

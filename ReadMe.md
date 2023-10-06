@@ -4,6 +4,8 @@
 
 please change the path in .env
 
+mongodb is running of 27016 !
+
 then run `docker compose up`
 
 to remove the .env file from staging (commiting)
