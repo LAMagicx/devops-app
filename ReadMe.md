@@ -6,6 +6,11 @@ please change the path in .env
 
 then run `docker compose up`
 
+to remove the .env file from staging (commiting)
+ 
+    git rm .env --cached
+    git commit -m "Stopped tracking .env File"
+
 ### Todo
 
 - add mongodb client to the app
