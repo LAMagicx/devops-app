@@ -6,7 +6,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
     ports:
-      - 27017:27017 
+      - 27016:27017 
     volumes:
       - db:${REL_PATH}/db
 volumes:
