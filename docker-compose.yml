@@ -1,4 +1,13 @@
 services:
+  app:
+    build: .
+    command: python3 -u app.py
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    links:
+      - mongo
   mongo:
     image: mongo
     restart: always
