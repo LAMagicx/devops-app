@@ -8,6 +8,7 @@ then run `docker compose up`
 
 to remove the .env file from staging (commiting)
  
+    echo "REL_PATH=$(pwd)" > .env
     git rm .env --cached
     git commit -m "Stopped tracking .env File"
 
