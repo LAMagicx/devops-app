@@ -1,13 +1,13 @@
 import csv, json
 from bson import json_util
 import pymongo
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template_string, request, jsonify, redirect
 import plotly.graph_objects as go
 import plotly.io as pio
 import pandas as pd
 import plotly.express as px
 from pymongo import MongoClient
-from template import HISTO, BARGRAPH, RAWDATA
+from template import HISTO, BARGRAPH, RAWDATA, PLAYLIST, GENRE
 
 def insert_csv_data(csv_path, db, collection_name):
     collection = db[collection_name]
@@ -97,6 +97,32 @@ def histograms():
     valence_html = valence_histogram.to_html()
 
     return render_template_string(HISTO, danceability=danceability_html, energy=energy_html, valence=valence_html)
+
+@app.route('/playlist', methods=['GET', 'POST'])
+def genre_selection():
+    if request.method == 'POST':
+        # If a genre is selected, redirect to the playlist for that genre
+        selected_genre = request.form.get('selected_genre')
+        if selected_genre:
+            return redirect(f'/playlist/{selected_genre}')
+    
+    # Query the MongoDB collection to get a list of unique genres
+    pipeline = [
+        {"$group": {"_id": "$genre"}},
+        {"$sort": {"_id": 1}}
+    ]
+    genres = list(collection.aggregate(pipeline))	
+
+    return render_template_string(GENRE, genres=genres)
+
+@app.route('/playlist/<genre>')
+def genre_playlist(genre):
+    # Query the MongoDB collection for all songs with the specified genre
+    query = {"genre": genre}
+    songs_with_genre = list(collection.find(query))
+
+    # Render the playlist template with the specified genre and songs
+    return render_template_string(PLAYLIST, genre=genre, data=songs_with_genre)
 
 
 if __name__ == '__main__':
