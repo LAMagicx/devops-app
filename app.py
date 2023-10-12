@@ -99,6 +99,21 @@ def histograms():
     return render_template_string(HISTO, danceability=danceability_html, energy=energy_html, valence=valence_html)
 
 
+@app.route("/1406")
+def sorting_db():
+    Key = request.args.get("key")
+
+    """Cette fonction trie les collones dans l'ordre décroissant si possible."""
+    # print(f"Key: {key}")  # Ajouter du débogage pour voir la clé
+
+    keys = ['msPlayed', 'danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'acousticness', 'liveness', 'valence', 'tempo', 'duration_ms']
+
+    if Key in keys:
+        data = list(collection.find().sort(Key, -1).limit(20))
+        return render_template_string(RAWDATA, data=data)
+    else:
+        return "key not found"
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
