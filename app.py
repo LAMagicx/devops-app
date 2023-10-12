@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, request
+import json
 import pymongo
 import pandas as pd
 from pymongo import MongoClient
@@ -19,9 +20,21 @@ insert_csv_data("Spotify_Song_Attributes.csv", db, "attributes")
 
 @app.route('/')
 def main():
+    db = client["Spotify"]
     attribs = db["attributes"]
     count = attribs.count_documents({'danceability': {'$gt': 0.4}})
     return f"{count}"
+
+@app.route('/query')
+def query():
+    attribs = db["attributes"]
+    q = request.args.get("q")
+
+    out = f"query: {q}\n"
+    for doc in attribs.find(json.loads(q)):
+        print(doc)
+        out += doc
+    return out
 
 
 if __name__ == "__main__":
