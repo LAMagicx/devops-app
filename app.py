@@ -1,5 +1,5 @@
 import csv, json
-from bson import json_util
+from bson import json_util, ObjectId
 import pymongo
 from flask import Flask, render_template_string, request, jsonify
 import plotly.graph_objects as go
@@ -7,7 +7,7 @@ import plotly.io as pio
 import pandas as pd
 import plotly.express as px
 from pymongo import MongoClient
-from template import HISTO, BARGRAPH, RAWDATA
+from template import HISTO, BARGRAPH, RAWDATA, SEARCHRESULTS
 
 def insert_csv_data(csv_path, db, collection_name):
     collection = db[collection_name]
@@ -66,16 +66,22 @@ def genre_bar_graph():
 
 @app.route('/query')
 def query_mongo():
-    query = request.args.get("q")
+    search_query = request.args.get("search_query")
+    df = pd.DataFrame(list(collection.find()))
 
-    # check if string is valid
-    try:
-        json.loads(query)
-    except json.JSONDecodeError:
-        return jsonify({'error', 'invalid query request'}), 400
+    if search_query:
+        # Filter the DataFrame based on the search query
+        search_results = df[df['trackName'].str.contains(search_query, case=False, regex=False)]
+        search_results = search_results.to_dict(orient='records')
+    else:
+        search_results = []
 
-    res = list(collection.find(json.loads(query)))
-    return parse_json(res)
+    # Ensure ObjectId fields are not included
+    for result in search_results:
+        if '_id' in result:
+            del result['_id']
+
+    return jsonify(search_results)
 
 @app.route('/histograms')
 def histograms():

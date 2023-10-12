@@ -96,6 +96,39 @@ RAWDATA = '''
     	<a href="/histograms"><button>Switch to Histogram View</button></a>
     	<a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a> <!-- New button for the bar graph page -->
 	</div>
+    <!--- Search bar --->
+    <form action="/" onsubmit="searchSongs();">
+        <label for="search_query">Search:</label>
+        <input type="text" id="search_query" name="search_query">
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        function searchSongs() {
+        const searchQuery = document.getElementById('search_query').value;
+        console.log(searchQuery);
+        fetch(`/query?search_query=${searchQuery}`)
+            .then(response => response.json())
+            .then(data => {
+                const searchResultsDiv = document.getElementById('search-results');
+                searchResultsDiv.innerHTML = '';
+                console.log(data)
+                if (data.length > 0) {
+                    data.forEach(song => {
+                        const songItem = document.createElement('div');
+                        songItem.textContent = song.trackName + ' - ' + song.artistName;
+                        searchResultsDiv.appendChild(songItem);
+                    });
+                } else {
+                    searchResultsDiv.textContent = 'No results found.';
+                }
+            })
+            .catch(error => console.error(error));
+    }
+    </script>
+    <div id="search-results">
+        <!-- Search results will be displayed here -->
+    </div>
     <table>
         <tr>
             {% for key, _ in data[0].items() %}
@@ -110,6 +143,58 @@ RAWDATA = '''
             </tr>
         {% endfor %}
     </table>
+</body>
+</html>
+'''
+
+SEARCHRESULTS = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        #histogram-button {
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <div id="histogram-button">
+        <a href="/histograms"><button>Switch to Histogram View</button></a>
+        <a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a> <!-- New button for the bar graph page -->
+    </div>
+    
 </body>
 </html>
 '''
