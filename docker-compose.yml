@@ -2,31 +2,21 @@ version: "3.1"
 services:
   app:
     build: .
-    command: python3 -u app.py
+    command: python -u app.py
     ports:
-      - 5000:5000
+      - "5000:5000"
     volumes:
       - .:/app
-    networks:
-      - frontend
     links:
-      - mongo
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pass
-    ports:
-      - 27017:27017 
-    volumes:
-      - db:${REL_PATH}/db
-    networks:
-      - backend
-volumes:
+      - db
   db:
-networks:
-  frontend:
-    driver: bridge
-  backend:
-    driver: bridge
+    image: mongo:latest
+    hostname: test_mongodb
+    environment:
+      - MONGO_INITDB_DATABASE=animal_db
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=pass
+    volumes:
+      - ./init-db.js:/docker-entrypoint-initdb.d/init-db.js:ro
+    ports:
+      - 27017:27017
