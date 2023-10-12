@@ -14,9 +14,9 @@ HISTO = '''<!DOCTYPE html>
 
     <script>
         // Use JavaScript to display Plotly plots in the placeholders
-        var danceability_plot = {{ danceability | safe }};
-        var energy_plot = {{ energy | safe }};
-        var valence_plot = {{ valence | safe }};
+        var danceability_plot = {{ danceability | safe }}
+		{{ energy | safe }}
+        {{ valence | safe }};
         
         document.getElementById('danceability_histogram').innerHTML = danceability_plot;
         document.getElementById('energy_histogram').innerHTML = energy_plot;
@@ -42,8 +42,7 @@ BARGRAPH = '''
     
     <script>
         // Use JavaScript to display the Plotly bar graph
-        var genre_bar_graph_plot = {{ genre_bar_graph | safe }};
-        document.getElementById('genre_bar_graph').innerHTML = genre_bar_graph_plot;
+        var genre_bar_graph_plot = {{ genre_bar_graph | safe }}
     </script>
 </body>
 </html>
