@@ -86,6 +86,8 @@ HISTO = '''<!DOCTYPE html>
     <div id="danceability_histogram"></div>
     <div id="energy_histogram"></div>
     <div id="valence_histogram"></div>
+    <a href="/"><button>Back to Raw Data</button></a>
+    <a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a>
 
     <script>
         // Use JavaScript to display Plotly plots in the placeholders
