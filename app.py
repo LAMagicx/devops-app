@@ -30,27 +30,25 @@ def raw():
 
 @app.route('/histograms')
 def histograms():
-    # Sample data for demonstration
-    data = {
-        "danceability": [0.7, 0.8, 0.6, 0.9, 0.5],
-        "energy": [0.6, 0.7, 0.8, 0.5, 0.4],
-        "valence": [0.8, 0.7, 0.9, 0.6, 0.5],
-    }
+    # Query data from the MongoDB collection
+    cursor = collection.find({}, {"_id": 0, "danceability": 1, "energy": 1, "valence": 1})
+    data = list(cursor)
 
+    # Create a DataFrame from the MongoDB data
     df = pd.DataFrame(data)
 
     # Create histograms using Plotly
-    danceability_histogram = px.histogram(df, x="danceability")
-    energy_histogram = px.histogram(df, x="energy")
-    valence_histogram = px.histogram(df, x="valence")
+    danceability_histogram = px.histogram(df, x="danceability", title="Danceability Histogram")
+    energy_histogram = px.histogram(df, x="energy", title="Energy Histogram")
+    valence_histogram = px.histogram(df, x="valence", title="Valence Histogram")
 
-    # You can also customize the layout of the histograms
-    danceability_histogram.update_layout(title_text="Danceability Histogram")
-    energy_histogram.update_layout(title_text="Energy Histogram")
-    valence_histogram.update_layout(title_text="Valence Histogram")
+    # Convert the Plotly plots to HTML for rendering
+    danceability_html = danceability_histogram.to_html()
+    energy_html = energy_histogram.to_html()
+    valence_html = valence_histogram.to_html()
 
-    return render_template_string(HISTO, danceability=danceability_histogram.to_html(),
-                           energy=energy_histogram.to_html(), valence=valence_histogram.to_html())
+    return render_template_string(HISTO, danceability=danceability_html,
+                           energy=energy_html, valence=valence_html)
 
 HISTO = '''<!DOCTYPE html>
 <html>
