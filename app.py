@@ -16,11 +16,13 @@ def parse_json(data):
 
 app = Flask(__name__)
 
-CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
-client = MongoClient(CONNECTION_STRING)
+# CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
+# client = MongoClient(CONNECTION_STRING)
+client = MongoClient(host="mongodb",
+                     port=27017,
+                     username="root",
+                     password="pass")
 print("Mongo Client Loaded")
-print(client.list_database_names())
-
 
 @app.route('/')
 def main():

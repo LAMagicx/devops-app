@@ -4,29 +4,21 @@ services:
     build: .
     command: python3 -u app.py
     ports:
-      - 5000:5000
+      - "5000:5000"
     volumes:
       - .:/app
-    networks:
-      - backend
     links:
-      - mongo
-  mongo:
+      - db
+  db:
     image: mongo
-    restart: always
+    hostname: mongodb
     environment:
+      MONGO_INITDB_DATABASE: sportifydb
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
+    volumes:
+      - db-data:/etc/data
     ports:
       - 27017:27017 
-    volumes:
-      - db:${REL_PATH}/db
-    networks:
-      - backend
 volumes:
-  db:
-networks:
-  frontend:
-    driver: bridge
-  backend:
-    driver: bridge
+  db-data:
