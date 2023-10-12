@@ -28,6 +28,31 @@ def raw():
 
     return render_template_string(RAWDATA, data=all_documents)
 
+@app.route('/genre-bar-graph')
+def genre_bar_graph():
+    # Query data from the MongoDB collection and group by genre
+    pipeline = [
+        {"$match": {"genre": {"$ne": "no value"}}},
+        {"$group": {"_id": "$genre", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    cursor = collection.aggregate(pipeline)
+    data = list(cursor)
+
+    # Extract the genre and count information
+    genres = [entry['_id'] for entry in data]
+    counts = [entry['count'] for entry in data]
+
+    # Create a bar graph using Plotly
+    fig = go.Figure(data=[go.Bar(x=genres, y=counts)])
+    fig.update_layout(title="Number of Songs by Genre", xaxis_title="Genre", yaxis_title="Count")
+
+    # Convert the Plotly graph to HTML for rendering
+    genre_bar_graph_html = pio.to_html(fig)
+
+    return render_template_string(BARGRAPH, genre_bar_graph=genre_bar_graph_html)
+
+
 @app.route('/histograms')
 def histograms():
     # Query data from the MongoDB collection
@@ -77,6 +102,28 @@ HISTO = '''<!DOCTYPE html>
 
 '''
 
+BARGRAPH = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Genre Bar Graph</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Genre Bar Graph</h1>
+    <div id="genre_bar_graph"></div>
+    <a href="/"><button>Back to Raw Data</button></a>
+    <a href="/histograms"><button>View Histograms</button></a>
+    
+    <script>
+        // Use JavaScript to display the Plotly bar graph
+        var genre_bar_graph_plot = {{ genre_bar_graph | safe }};
+        document.getElementById('genre_bar_graph').innerHTML = genre_bar_graph_plot;
+    </script>
+</body>
+</html>
+'''
+
 RAWDATA = '''
 <!DOCTYPE html>
 <html>
@@ -121,8 +168,9 @@ RAWDATA = '''
 <body>
     <h1>Raw Data</h1>
     <div id="histogram-button">
-        <a href="/histograms"><button>Switch to Histogram View</button></a>
-    </div>
+    	<a href="/histograms"><button>Switch to Histogram View</button></a>
+    	<a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a> <!-- New button for the bar graph page -->
+	</div>
     <table>
         <tr>
             {% for key, _ in data[0].items() %}
