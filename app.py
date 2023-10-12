@@ -18,7 +18,7 @@ def parse_json(data):
 app = Flask(__name__)
 
 client = MongoClient(host="mongodb",
-                     port=27017,
+                     port=27018,
                      username="root",
                      password="pass")
 print("Mongo Client Loaded")

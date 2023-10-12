@@ -19,6 +19,6 @@ services:
     volumes:
       - db-data:/etc/data
     ports:
-      - 27017:27017 
+      - 27018:27017 
 volumes:
   db-data:
