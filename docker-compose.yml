@@ -9,6 +9,8 @@ services:
       - .:/app
     links:
       - db
+    networks:
+      - app-network
   db:
     image: mongo
     hostname: mongodb
@@ -20,5 +22,11 @@ services:
       - db-data:/etc/data
     ports:
       - 27018:27017 
+    networks:
+      - app-network
 volumes:
   db-data:
+
+networks: 
+  app-network:
+    name: mongo-docker-network
