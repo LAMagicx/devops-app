@@ -1,32 +1,26 @@
 version: "3.1"
 services:
-  app:
-    build: .
-    command: python3 -u app.py
-    ports:
-      - "5000:5000"
-    volumes:
-      - .:/app
-    links:
-      - db
-    networks:
-      - app-network
+  # app:
+  #   build: .
+  #   command: python3 -u app.py
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - .:/app
+  #   links:
+  #     - db
+  #   networks:
+  #     - app-network
   db:
     image: mongo
     hostname: mongodb
     environment:
-      MONGO_INITDB_DATABASE: sportifydb
+      MONGO_INITDB_DATABASE: spotifydb
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
     volumes:
       - db-data:/etc/data
     ports:
       - 27018:27017 
-    networks:
-      - app-network
 volumes:
   db-data:
-
-networks: 
-  app-network:
-    name: mongo-docker-network

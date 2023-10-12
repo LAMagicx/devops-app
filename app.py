@@ -21,6 +21,7 @@ client = MongoClient(host="mongodb",
                      port=27018,
                      username="root",
                      password="pass")
+client = MongoClient("mongodb://root:pass@localhost:27018/?authMechanism=DEFAULT")
 print("Mongo Client Loaded")
 db = client["spotifyDB"]
 if "spotifyDB" not in client.list_database_names():
