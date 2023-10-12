@@ -95,7 +95,7 @@ RAWDATA = '''
     <div id="histogram-button">
     	<a href="/histograms"><button>Switch to Histogram View</button></a>
     	<a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a>
-    	<a href="/playlist"><button>Get a playlist of your chose genre</button></a>
+    	<a href="/playlist"><button>Get a playlist of your chosen genre</button></a>
 	</div>
     <table>
         <tr>
