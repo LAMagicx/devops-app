@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Page</title>
+</head>
+<script>
+    function load_data(search){
+        fetch("/query?q={}&s="+search)
+        .then((response) => response.json())
+        .then((data) => {
+            displayTable(data);
+        })
+        .catch((error) => {
+            console.error("Error fetching data: " + error);
+        });
+    }
+
+    function reload_data() {
+        input = document.getElementById("search").value;
+        load_data(input);
+    }
+    function displayTable(data) {
+        const tableContainer = document.getElementById("tableContainer");
+        tableContainer.innerHTML = ""; // Clear previous data
+
+        if (data.length === 0) {
+            tableContainer.textContent = "No data available.";
+            return;
+        }
+
+        const table = document.createElement("table");
+        table.className = "data-table";
+
+        const headerRow = table.insertRow(0);
+        for (let key in data[0]) {
+            const th = document.createElement("th");
+            th.textContent = key;
+            headerRow.appendChild(th);
+    }
+
+    data.forEach((item, index) => {
+        const row = table.insertRow(index + 1);
+        for (let key in item) {
+            const cell = row.insertCell();
+            cell.textContent = item[key];
+        }
+    });
+
+    tableContainer.appendChild(table);
+    }
+    load_data();
+</script>
+<body>
+    <h1>Search Page</h1>
+        <input id="search" type="text" name="q" placeholder="Enter your search term" onkeypress="reload_data()">
+    
+    {% if result %}
+    <div>
+        {{ result }}
+    </div>
+    {% endif %}
+
+    <div id="tableContainer"></div>
+
+</body>
+</html>
+

@@ -1,7 +1,7 @@
 import csv, json
 from bson import json_util
 import pymongo
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template_string, request, jsonify, render_template
 import plotly.graph_objects as go
 import plotly.io as pio
 import pandas as pd
@@ -70,6 +70,7 @@ def genre_bar_graph():
 @app.route('/query')
 def query_mongo():
     query = request.args.get("q")
+    search = request.args.get("s")
 
     # check if string is valid
     try:
@@ -77,8 +78,17 @@ def query_mongo():
     except json.JSONDecodeError:
         return jsonify({'error', 'invalid query request'}), 400
 
-    res = list(collection.find(json.loads(query)))
-    return parse_json(res)
+    find_res = list(collection.find(json.loads(query)))
+    print(find_res)
+    if search:
+        df = pd.DataFrame(find_res).dropna()
+        title_res = df[df["trackName"].apply(str.lower).str.contains(search)]
+        artist_res = df[df["artistName"].apply(str.lower).str.contains(search)]
+        search_results = pd.concat([title_res, artist_res]).drop_duplicates()
+
+        return parse_json(search_results.to_dict(orient="records"))
+    else:
+        return parse_json(find_res)
 
 @app.route('/histograms')
 def histograms():
@@ -100,6 +110,20 @@ def histograms():
     valence_html = valence_histogram.to_html()
 
     return render_template_string(HISTO, danceability=danceability_html, energy=energy_html, valence=valence_html)
+
+@app.route('/dist')
+def distances():
+    search_term = request.args.get('q')
+
+    df = pd.DataFrame(list(collection.find())).dropna()
+    
+    if search_term:
+        result = f"Search results for: {search_term}"
+        search_results = df["trackName"].apply(str.lower).str.contains(search_term.lower())
+    else:
+        result = None
+
+    return render_template('search.html', result=result)
 
 @app.route('/scatter')
 def analyse():
