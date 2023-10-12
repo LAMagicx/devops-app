@@ -1,4 +1,4 @@
-import csv, json
+import json
 from bson import json_util
 import pymongo
 from flask import Flask, render_template_string, request, jsonify, redirect
