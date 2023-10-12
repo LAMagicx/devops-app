@@ -53,7 +53,6 @@ def genre_bar_graph():
 
     return render_template_string(BARGRAPH, genre_bar_graph=genre_bar_graph_html)
 
-
 @app.route('/histograms')
 def histograms():
     # Query data from the MongoDB collection
