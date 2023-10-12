@@ -1,5 +1,9 @@
 # Docker Flask MongoDB App
 
+## run
+
+    docker-compose up && flask --app app.py --debug run
+
 ## Init
 
 please change the path in .env

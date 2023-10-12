@@ -1,4 +1,5 @@
-from flask import Flask, jsonify
+import csv, json
+from bson import json_util
 import pymongo
 from flask import Flask, render_template_string, request, jsonify
 import plotly.graph_objects as go
@@ -9,6 +10,8 @@ import plotly.express as px
 from pymongo import MongoClient
 from template import HISTO, BARGRAPH, RAWDATA
 from sklearn.decomposition import PCA
+
+app = Flask(__name__)
 
 def insert_csv_data(csv_path, db, collection_name):
     collection = db[collection_name]
@@ -22,6 +25,25 @@ def calculate_song_distance(s1, s2):
     numerical_features = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "valence", "tempo"]
 
     return np.linalg.norm(s1[numerical_features].values, s2[numerical_features].values)
+
+
+client = pymongo.MongoClient("mongodb://root:pass@localhost:27018")
+print("Mongo Client Loaded")
+db = client["spotifyDB"]
+if "spotifyDB" not in client.list_database_names():
+    print("Spotify database is not loaded")
+    print("Loading spotify data")
+    insert_csv_data("Spotify_small.csv", db, "attributes")
+
+collection = db["attributes"]
+print("Client finished loading")
+
+@app.route('/')
+def raw():
+    # Extract all data from the MongoDB collection
+    all_documents = list(collection.find().limit(20))
+
+    return render_template_string(RAWDATA, data=all_documents)
 
 @app.route('/genre-bar-graph')
 def genre_bar_graph():
@@ -79,23 +101,23 @@ def histograms():
 
     return render_template_string(HISTO, danceability=danceability_html, energy=energy_html, valence=valence_html)
 
-@app.route('/analyse')
+@app.route('/scatter')
 def analyse():
     # pca analysis of songs
     df = pd.DataFrame(list(collection.find())).dropna()
     numerical_features = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "valence", "tempo"]
 
-    pca = PCA(n_components=2)
+    pca = PCA(n_components=3)
     data = pca.fit_transform(df[numerical_features])
 
     df["X"] = data[:, 0]
     df["Y"] = data[:, 1]
+    df["Z"] = data[:, 2]
 
+    df["name"] = df["trackName"] + " - " + df["artistName"]
 
+    return px.scatter_3d(df, x="X", y="Y", z="Z", color="danceability", hover_name="name").to_html()
 
-
-
-    return ""
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
