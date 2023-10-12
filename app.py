@@ -12,8 +12,8 @@ from template import HISTO, BARGRAPH, RAWDATA
 app = Flask(__name__)
 
 # Initialize a connection to the MongoDB database
-mongo_client = pymongo.MongoClient("mongodb://root:pass@localhost:27018")
-db = mongo_client["my_database"]
+client = pymongo.MongoClient("mongodb://root:pass@localhost:27018")
+db = client["spotifyDB"]
 collection = db["spotify_data"]
 
 # Read data from CSV file and insert it into the MongoDB collection
