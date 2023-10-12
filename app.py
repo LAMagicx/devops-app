@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from bson import json_util
 import pymongo, json
 import pandas as pd
+import os
 from pymongo import MongoClient
 
 
@@ -16,13 +17,18 @@ def parse_json(data):
 
 app = Flask(__name__)
 
-# CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
-# client = MongoClient(CONNECTION_STRING)
 client = MongoClient(host="mongodb",
                      port=27017,
                      username="root",
                      password="pass")
 print("Mongo Client Loaded")
+db = client["spotifyDB"]
+if "spotifyDB" not in client.list_database_names():
+    print("Spotify database is not loaded")
+    print("Loading spotify data")
+    insert_csv_data("Spotify_small.csv", db, "attributes")
+
+attribs = db["attributes"]
 
 @app.route('/')
 def main():
@@ -31,17 +37,15 @@ def main():
 @app.route('/query')
 def query_mongo():
     query = request.args.get("q")
+
+    # check if string is valid
     try:
-        query_dict = eval(query)
-    except Exception as e:
-        return jsonify({'error', 'invalid query'}), 400
-    try:
-        print(query)
-        print(query_dict)
-        res = list(attribs.find(query_dict))
-        return parse_json(res), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        json.loads(query)
+    except json.JSONDecodeError:
+        return jsonify({'error', 'invalid query request'}), 400
+
+    res = list(attribs.find(json.loads(query)))
+    return parse_json(res)
 
 
 if __name__ == "__main__":
