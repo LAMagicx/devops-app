@@ -18,16 +18,13 @@ app = Flask(__name__)
 
 CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
 client = MongoClient(CONNECTION_STRING)
-db = client["Spotify"]
-print("Loading data")
-insert_csv_data("Spotify_Song_Attributes.csv", db, "attributes")
-print("Data Loaded !")
-attribs = db["attributes"]
+print("Mongo Client Loaded")
+print(client.list_database_names())
+
 
 @app.route('/')
 def main():
-    count = attribs.count_documents({'danceability': {'$gt': 0.4}})
-    return f"c:{count}"
+    return f"{client}"
 
 @app.route('/query')
 def query_mongo():
@@ -46,4 +43,4 @@ def query_mongo():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
