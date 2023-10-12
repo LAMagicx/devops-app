@@ -5,10 +5,13 @@ from pymongo import MongoClient
 
 app = Flask(__name__)
 
+CONNECTION_STRING = "mongodb://root:pass@localhost:27017/?authMechanism=DEFAULT"
+client = MongoClient(CONNECTION_STRING)
+
 
 @app.route('/')
 def main():
-    return "Hello there.."
+    return f"{client}"
 
 
 if __name__ == "__main__":

@@ -3,9 +3,11 @@ services:
     build: .
     command: python3 -u app.py
     ports:
-      - "5000:5000"
+      - 5000:5000
     volumes:
       - .:/app
+    networks:
+      - frontend
     links:
       - mongo
   mongo:
@@ -15,8 +17,15 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
     ports:
-      - 27016:27017 
+      - 27017:27017 
     volumes:
       - db:${REL_PATH}/db
+    networks:
+      - backend
 volumes:
   db:
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
