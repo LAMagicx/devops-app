@@ -4,9 +4,7 @@ from flask import Flask, render_template_string, render_template, request
 import plotly.graph_objects as go
 import plotly.io as pio
 """
-this works just have to make sure mongo is running
-so open a terminal and run $sudo mongod
-then python app.py, go to url and voilà
+
 """
 app = Flask(__name__)
 
