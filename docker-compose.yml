@@ -1,14 +1,26 @@
 version: "3.1"
 services:
-  mongo:
+  # app:
+  #   build: .
+  #   command: python3 -u app.py
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - .:/app
+  #   links:
+  #     - db
+  #   networks:
+  #     - app-network
+  db:
     image: mongo
-    restart: always
+    hostname: mongodb
     environment:
+      MONGO_INITDB_DATABASE: spotifydb
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
-    ports:
-      - 27017:27017 
     volumes:
-      - db:${REL_PATH}/db
+      - db-data:/etc/data
+    ports:
+      - 27018:27017 
 volumes:
-  db:
+  db-data:
