@@ -1,8 +1,10 @@
 import csv
 import pymongo
-from flask import Flask, render_template_string, render_template, request
+from flask import Flask, render_template_string, request
 import plotly.graph_objects as go
 import plotly.io as pio
+import pandas as pd
+import plotly.express as px
 """
 
 """
@@ -19,151 +21,110 @@ with open('Spotify_Song_Attributes.csv', 'r') as file:
 	for row in csv_reader:
 		collection.insert_one(row)
 
-@app.route('/raw')
+@app.route('/')
 def raw():
     # Extract all data from the MongoDB collection
-    all_documents = list(collection.find())
+    all_documents = list(collection.find().limit(20))
 
     return render_template_string(RAWDATA, data=all_documents)
 
-@app.route('/')
-def index():
-	search_letter = request.args.get('search', '').upper()
-	if search_letter:
-		# Regex to filter artists by the first letter of their name
-		query = {'artistName': {'$regex': f'^{search_letter}'}}
-		projection = {'artistName': 1, '_id': 0}
-		artists = collection.find(query, projection)
+@app.route('/histograms')
+def histograms():
+    # Sample data for demonstration
+    data = {
+        "danceability": [0.7, 0.8, 0.6, 0.9, 0.5],
+        "energy": [0.6, 0.7, 0.8, 0.5, 0.4],
+        "valence": [0.8, 0.7, 0.9, 0.6, 0.5],
+    }
 
-	else:
-		artists = collection.find({}, {'artistName': 1, '_id': 0})
-	artists_list = list(artists)
-	return render_template_string(TEMPLATE, artists=artists_list)
+    df = pd.DataFrame(data)
 
-##################################################      Sort by criteria   ##############
-@app.route('/sort/<criteria>')
-def sort(criteria):
-    """
-    Route to sort and display artists based on a given criteria.
-    
-    Parameters:
-    criteria (str): The field by which to sort the artists. 
-                    Valid values are 'streams', 'released_year', and 'danceability_%'.
-    
-    Returns:
-    str: Rendered HTML template as a string.
-    """
-    if criteria not in ['streams', 'released_year', 'danceability_%']:
-        return "Invalid criteria", 400  # retourne une erreur si le critère n'est pas valide
-    sort_criteria = [(criteria, -1)]  # -1 pour le tri descendant
-    artists = collection.find({}, {'artistName': 1, '_id': 0}).sort(
-        sort_criteria
-    )  # Split long line into two lines
-    return render_template_string(TEMPLATE, artists=artists)
+    # Create histograms using Plotly
+    danceability_histogram = px.histogram(df, x="danceability")
+    energy_histogram = px.histogram(df, x="energy")
+    valence_histogram = px.histogram(df, x="valence")
 
-##################################################      Data Vizualisation  ###############
-@app.route('/visualize/<key>')
-def visualize(key):
-    """Cette fonction génère un histogramme basé sur la clé donnée."""
-    # print(f"Key: {key}")  # Ajouter du débogage pour voir la clé
-    data = db.spotify.find({}, {key: 1, 'artistName': 1, '_id': 0})
-    values = []
-    artist_names = []
-    for item in data:
-        if key in item and 'artistName' in item:
-            values.append(item[key])
-            artist_names.append(item['artistName'])
-    hover_texts = [
-        f"{artist_name}<br>{key}: {value}" for artist_name, value in zip(artist_names, values)
-    ]
+    # You can also customize the layout of the histograms
+    danceability_histogram.update_layout(title_text="Danceability Histogram")
+    energy_histogram.update_layout(title_text="Energy Histogram")
+    valence_histogram.update_layout(title_text="Valence Histogram")
 
-    trace = go.Histogram(
-        x=values,
-        text=hover_texts,  # Set hover text
-        hoverinfo='text'  # Only show custom hover text
-    )
-    fig = go.Figure(data=trace)
-    fig_div = pio.to_html(fig, full_html=False)
-    return render_template_string(TEMPLATE, fig_div=fig_div)
+    return render_template_string(HISTO, danceability=danceability_histogram.to_html(),
+                           energy=energy_histogram.to_html(), valence=valence_histogram.to_html())
 
-TEMPLATE = '''
-<!doctype html>
-<html lang="en">
-  <head>
-	<!-- Required meta tags -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+HISTO = '''<!DOCTYPE html>
+<html>
+<head>
+    <title>Histograms</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Histograms</h1>
+    <div id="danceability_histogram"></div>
+    <div id="energy_histogram"></div>
+    <div id="valence_histogram"></div>
 
-	<!-- Bootstrap CSS -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-	<!-- Dark Theme Styles -->
-	<style>
-		body {
-			background-color: #343a40;
-			color: #ffffff;
-		}
-		.container {
-			background-color: #454d55;
-			border-radius: 10px;
-			padding: 20px;
-		}
-		.list-group-item {
-			background-color: #454d55;
-			color: #ffffff;  <!-- Ajout de cette règle pour définir la couleur du texte en blanc -->
-		}
-	</style>
-
-	<title>Spotify Artists</title>
-  </head>
-  <body>
-	<div class="container">
-	  <h1 class="mt-5">Ma p'tite biblio spotify</h1>
-	   <div class="mt-3 mb-3">
-	   <a href="/visualize/tempo" class="btn btn-primary mb-3">Visualiser par indicateur "tempo"</a><br>
-		<a href="/visualize/msPlayed" class="btn btn-primary mb-3">Visualiser par indicateur "Most Played"</a><br>
-		<a href="/visualize/energy" class="btn btn-primary mb-3">Visualiser par indicateur "energy"</a><br>
-		Sort by: 
-			<a href="/sort/streams">Streams</a> | 
-			<a href="/sort/released_year">Year</a> | 
-			<a href="/sort/danceability_%">Danceability</a>
-		</div>
-		<div class="mt-4 mb-4">
-			<!-- Alphabet links -->
-			{% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' %}
-				<a href="/?search={{ letter }}">{{ letter }}</a>
-			{% endfor %}
-		</div>
-		<!-- Add this div to display the Plotly graph -->
-		<div class="mt-4">
-			{{ fig_div | safe }}
-		</div>
-		
-		</div>
-		<ul class="list-group mt-3">
-			{% for artist in artists %}
-				<li class="list-group-item">{{ artist['artistName'] }}</li>
-			{% endfor %}
-		</ul>
-	</div>
-
-	<!-- Optional JavaScript; choose one of the two! -->
-
-	<!-- Option 1: Bootstrap Bundle with Popper -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script>
+        // Use JavaScript to display Plotly plots in the placeholders
+        var danceability_plot = {{ danceability | safe }};
+        var energy_plot = {{ energy | safe }};
+        var valence_plot = {{ valence | safe }};
+        
+        document.getElementById('danceability_histogram').innerHTML = danceability_plot;
+        document.getElementById('energy_histogram').innerHTML = energy_plot;
+        document.getElementById('valence_histogram').innerHTML = valence_plot;
+    </script>
+</body>
 </html>
-'''
 
+'''
 
 RAWDATA = '''
 <!DOCTYPE html>
 <html>
 <head>
     <title>Raw Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        #histogram-button {
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
     <h1>Raw Data</h1>
+    <div id="histogram-button">
+        <a href="/histograms"><button>Switch to Histogram View</button></a>
+    </div>
     <table>
         <tr>
             {% for key, _ in data[0].items() %}
@@ -180,7 +141,6 @@ RAWDATA = '''
     </table>
 </body>
 </html>
-
 '''
 
 if __name__ == '__main__':
