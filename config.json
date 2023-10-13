@@ -1,0 +1,12 @@
+{
+    "users": [
+        {
+            "username": "me lol",
+            "api_token": "ATATT3xFfGF0NFC0oxqpZ7-bZZOaXK4y9UQfmWbR57PqY3Zxyqgcoq7dA2SvoYmYSTcZblJoBHRvchm_W43OvuzxyJg-lzGRSOybrWqrT37OrCjUwI6bN5dgmENFmbZi1n1T7ihZlW_tA8yYD0b7lmGjCvzVThmIC_SfUImxZ8Joq-1l7-nS1MM=B34C0F79"
+        },
+        {
+            "username": "user2",
+            "api_token": "api_token2"
+        }
+    ]
+}

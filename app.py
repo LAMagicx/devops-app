@@ -1,3 +1,4 @@
+import requests
 import json
 from bson import json_util
 import pymongo
@@ -139,6 +140,75 @@ def sorting_db():
         return render_template_string(RAWDATA, data=data)
     else:
         return "key not found"
+
+def get_jira_credentials(username):
+    with open('config.json', 'r') as config_file:
+        config_data = json.load(config_file)
+    
+    for user in config_data['users']:
+        if user['username'] == username:
+            return user['api_token']
+    
+    return None
+
+# Your Jira API information
+JIRA_URL = 'https://rawdata.atlassian.net/rest/api/3'
+JIRA_USERNAME = 'me lol'
+
+@app.route('/get_jira_issues')
+def get_jira_issues():
+    # username = request.args.get('username')  
+    API_TOKEN = get_jira_credentials(JIRA_USERNAME)
+
+    if API_TOKEN is None:
+        return jsonify({'error': 'User not found or missing credentials'}), 401
+
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+
+    auth = (JIRA_USERNAME, API_TOKEN)
+
+    # Example GET request to retrieve issues
+    response = requests.get(f'{JIRA_URL}/issue/search', headers=headers, auth=auth)
+
+@app.route('/create_jira_issue', methods=['POST'])
+def create_jira_issue():
+    # username = request.args.get('username')  # You can pass the username as a parameter
+    api_token = get_jira_credentials(JIRA_USERNAME)
+
+    if api_token is None:
+        return jsonify({'error': 'User not found or missing credentials'}), 401
+
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+
+    auth = (JIRA_USERNAME, api_token)
+
+    # Data for creating a Jira issue
+    issue_data = {
+        "fields": {
+            "project": {
+                "key": "YOUR_PROJECT_KEY"
+            },
+            "summary": "New Issue",
+            "description": "This is a test issue created via the API.",
+            "issuetype": {
+                "name": "Bug"  # Adjust the issue type as needed
+            }
+        }
+    }
+
+    # Create the issue
+    response = requests.post(f'{JIRA_URL}/issue', headers=headers, auth=auth, json=issue_data)
+
+    if response.status_code == 201:
+        return jsonify({'message': 'Jira issue created successfully'})
+    else:
+        return jsonify({'error': 'Failed to create Jira issue'}), 500
 
 
 if __name__ == '__main__':
