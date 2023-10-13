@@ -111,6 +111,7 @@ RAWDATA = '''
     	<a href="/histograms"><button>Switch to Histogram View</button></a>
     	<a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a>
     	<a href="/playlist"><button>Get a playlist of your chosen genre</button></a>
+    	<a href="/scatter"><button>SCATTER PLOT OF SONGS</button></a>
 	</div>
     <table>
         <tr>
