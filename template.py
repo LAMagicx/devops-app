@@ -113,6 +113,13 @@ RAWDATA = '''
     	<a href="/playlist"><button>Get a playlist of your chosen genre</button></a>
     	<a href="/scatter"><button>SCATTER PLOT OF SONGS</button></a>
 	</div>
+    <!--- Search bar --->
+    <form action="/query" onsubmit="searchSongs();">
+        <label for="search_query">Search:</label>
+        <input type="text" id="search_query" name="search_query">
+        <input type="submit" value="Submit">
+    </form>
+
     <table>
         <tr>
             {% for key, _ in data[0].items() %}
@@ -131,11 +138,11 @@ RAWDATA = '''
 </html>
 '''
 
-PLAYLIST = '''
+SEARCHRESULTS = '''
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Playlist</title>
+    <title>Search Results</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -173,6 +180,12 @@ PLAYLIST = '''
     </style>
 </head>
 <body>
+'''
+PLAYLIST = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Playlist</title>
     <h1>Playlist for Genre: {{ genre }}</h1>
     <div id="histogram-button">
         <a href="/histograms"><button>Switch to Histogram View</button></a>
@@ -202,6 +215,70 @@ GENRE = '''
 <html>
 <head>
     <title>Choose Genre</title>
+    <h1>Search Results</h1>
+    <div id="histogram-button">
+        <a href="/histograms"><button>Switch to Histogram View</button></a>
+        <a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a> <!-- New button for the bar graph page -->
+        <a href="/"><button>Back to Raw Data</button></a>
+    </div>
+<!--- Search bar --->
+    <form action="/query" onsubmit="searchSongs();">
+        <label for="search_query">Search:</label>
+        <input type="text" id="search_query" name="search_query">
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+    console.log(data.toString())
+    </script>
+    {% if data.empty %}
+        <p>No results found.</p>
+    {% else %}
+        <table>
+            <tr>
+                {% for key, _ in data[0].items() %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+            {% for document in data %}
+                <tr>
+                    {% for key, value in document.items() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <script>
+        function searchSongs() {
+            const searchQuery = document.getElementById('search_query').value;
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tr');
+
+            for (let i = 1; i < rows.length; i++) {  // Start from 1 to skip the header row
+                const trackName = rows[i].querySelector('td:first-child').textContent.toLowerCase();
+                if (trackName.includes(searchQuery.toLowerCase())) {
+                    rows[i].style.display = 'table-row';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+    <div id="search-results">
+        <!-- Search results will be displayed here -->
+    </div>
+    
+</body>
+</html>
+'''
+
+NORESULT = '''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raw Data</title>
+>>>>>>> mongodb
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -215,33 +292,45 @@ GENRE = '''
             text-align: center;
             padding: 10px;
         }
-        form {
-            text-align: center;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        select {
-            padding: 5px;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
         }
-        input[type="submit"] {
-            padding: 5px 15px;
+        th {
             background-color: #333;
             color: white;
-            border: none;
-            cursor: pointer;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        #histogram-button {
+            text-align: center;
+            padding: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Choose a Genre</h1>
-    <form method="POST">
-        <select name="selected_genre">
-            <option value="">Select a Genre</option>
-            {% for entry in genres %}
-                <option value="{{ entry._id }}">{{ entry._id }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="View Playlist">
+    <h1>Raw Data</h1>
+    <div id="histogram-button">
+    	<a href="/histograms"><button>Switch to Histogram View</button></a>
+    	<a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a> <!-- New button for the bar graph page -->
+        <a href="/"><button>Back to Raw Data</button></a>
+	</div>
+    <!--- Search bar --->
+    <form action="/query" onsubmit="searchSongs();">
+        <label for="search_query">Search:</label>
+        <input type="text" id="search_query" name="search_query">
+        <input type="submit" value="Submit">
     </form>
+    <h2>No Results Found</h2>
+    <p>No results were found for the search query: {{ search_query }}</p>
+    <!-- You can add a link back to the search page if needed -->
 </body>
 </html>
 '''

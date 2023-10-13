@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from pymongo import MongoClient
-from template import HISTO, BARGRAPH, RAWDATA, PLAYLIST, GENRE
+from template import HISTO, BARGRAPH, RAWDATA, PLAYLIST, GENRE, SEARCHRESULTS, NORESULT
 from sklearn.decomposition import PCA
 
 app = Flask(__name__)
@@ -67,18 +67,22 @@ def genre_bar_graph():
 
 	return render_template_string(BARGRAPH, genre_bar_graph=genre_bar_graph_html)
 
-@app.route('/query')
+@app.route('/query', methods=['GET', 'POST'])
 def query_mongo():
-	query = request.args.get("q")
+    query = request.args.get("search_query")
+    df = pd.DataFrame(list(collection.find()))
 
-	# check if string is valid
-	try:
-		json.loads(query)
-	except json.JSONDecodeError:
-		return jsonify({'error', 'invalid query request'}), 400
-
-	res = list(collection.find(json.loads(query)))
-	return parse_json(res)
+    if query:
+        # Apply a filter if a search query is provided
+        filtered_data = df[df['trackName'].str.contains(query, case=False)]
+        if filtered_data.empty:
+            # If the filtered data is empty, render a specific template for no results
+            return render_template_string(NORESULT)
+    else:
+        # If no search query, show all data
+        filtered_data = df
+    
+    return render_template_string(SEARCHRESULTS, data=filtered_data.to_dict('records'), search_query=query)
 
 @app.route('/histograms')
 def histograms():

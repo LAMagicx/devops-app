@@ -1,16 +1,6 @@
-version: "3.1"
+version: '3.4'
+
 services:
-  # app:
-  #   build: .
-  #   command: python3 -u app.py
-  #   ports:
-  #     - "5000:5000"
-  #   volumes:
-  #     - .:/app
-  #   links:
-  #     - db
-  #   networks:
-  #     - app-network
   db:
     image: mongo
     hostname: mongodb
@@ -22,5 +12,12 @@ services:
       - db-data:/etc/data
     ports:
       - 27018:27017 
+  devopsapp:
+    image: devopsapp
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 5000:5000
 volumes:
   db-data:
