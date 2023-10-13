@@ -91,8 +91,8 @@ RAWDATA = '''
 </head>
 <body>
     <h1>Raw Data</h1>
-    <input type="text" id="searchInput" placeholder="Saisir le nom dune collonne">
-    <button onclick="rechercherAvecCle()">Rechercher</button>
+    <input type="text" id="searchInput" placeholder="Saisir le nom dune colonne">
+    <button onclick="rechercherAvecCle()">SORT</button>
 
     <script>
         function rechercherAvecCle() {
