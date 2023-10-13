@@ -6,9 +6,13 @@ from flask import Flask, render_template_string, request, jsonify, redirect
 import plotly.graph_objects as go
 import plotly.io as pio
 import pandas as pd
+import numpy as np
 import plotly.express as px
 from pymongo import MongoClient
 from template import HISTO, BARGRAPH, RAWDATA, PLAYLIST, GENRE
+from sklearn.decomposition import PCA
+
+app = Flask(__name__)
 
 def insert_csv_data(csv_path, db, collection_name):
 	collection = db[collection_name]
@@ -18,13 +22,11 @@ def insert_csv_data(csv_path, db, collection_name):
 def parse_json(data):
 	return json.loads(json_util.dumps(data))
 
+def calculate_song_distance(s1, s2):
+    numerical_features = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "valence", "tempo"]
 
-app = Flask(__name__)
+    return np.linalg.norm(s1[numerical_features].values, s2[numerical_features].values)
 
-client = MongoClient(host="mongodb",
-					 port=27018,
-					 username="root",
-					 password="pass")
 client = pymongo.MongoClient("mongodb://root:pass@localhost:27018")
 print("Mongo Client Loaded")
 db = client["spotifyDB"]
@@ -207,6 +209,23 @@ def get_jira_issues():
 
 	# Example GET request to retrieve issues
 	response = requests.get(f'{JIRA_URL}/search', headers=headers, auth=auth)
+
+@app.route('/scatter')
+def analyse():
+    # pca analysis of songs
+    df = pd.DataFrame(list(collection.find())).dropna()
+    numerical_features = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "valence", "tempo"]
+
+    pca = PCA(n_components=3)
+    data = pca.fit_transform(df[numerical_features])
+
+    df["X"] = data[:, 0]
+    df["Y"] = data[:, 1]
+    df["Z"] = data[:, 2]
+
+    df["name"] = df["trackName"] + " - " + df["artistName"]
+
+    return px.scatter_3d(df, x="X", y="Y", z="Z", color="danceability", hover_name="name").to_html()
 
 
 if __name__ == '__main__':
