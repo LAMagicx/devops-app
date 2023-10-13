@@ -7,7 +7,7 @@ import plotly.io as pio
 import pandas as pd
 import plotly.express as px
 from pymongo import MongoClient
-from template import HISTO, BARGRAPH, RAWDATA, SEARCHRESULTS
+from template import HISTO, BARGRAPH, RAWDATA, SEARCHRESULTS, NORESULT
 
 def insert_csv_data(csv_path, db, collection_name):
     collection = db[collection_name]
@@ -64,24 +64,22 @@ def genre_bar_graph():
 
     return render_template_string(BARGRAPH, genre_bar_graph=genre_bar_graph_html)
 
-@app.route('/query')
+@app.route('/query', methods=['GET', 'POST'])
 def query_mongo():
-    search_query = request.args.get("search_query")
+    query = request.args.get("search_query")
     df = pd.DataFrame(list(collection.find()))
 
-    if search_query:
-        # Filter the DataFrame based on the search query
-        search_results = df[df['trackName'].str.contains(search_query, case=False, regex=False)]
-        search_results = search_results.to_dict(orient='records')
+    if query:
+        # Apply a filter if a search query is provided
+        filtered_data = df[df['trackName'].str.contains(query, case=False)]
+        if filtered_data.empty:
+            # If the filtered data is empty, render a specific template for no results
+            return render_template_string(NORESULT)
     else:
-        search_results = []
-
-    # Ensure ObjectId fields are not included
-    for result in search_results:
-        if '_id' in result:
-            del result['_id']
-
-    return jsonify(search_results)
+        # If no search query, show all data
+        filtered_data = df
+    
+    return render_template_string(SEARCHRESULTS, data=filtered_data.to_dict('records'), search_query=query)
 
 @app.route('/histograms')
 def histograms():
