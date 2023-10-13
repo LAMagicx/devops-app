@@ -91,6 +91,22 @@ RAWDATA = '''
 </head>
 <body>
     <h1>Raw Data</h1>
+    <input type="text" id="searchInput" placeholder="Saisir le nom dune collonne">
+    <button onclick="rechercherAvecCle()">Rechercher</button>
+
+    <script>
+        function rechercherAvecCle() {
+            // Récupérer la valeur saisie par l'utilisateur
+            var cle = document.getElementById("searchInput").value;
+            
+            // Construire l'URL de recherche
+            var urlDeRecherche = "/1406?key=" + cle;
+
+            // Rediriger la fenêtre vers l'URL de recherche
+            window.location.href = urlDeRecherche;
+        }
+    </script>
+
     <div id="histogram-button">
     	<a href="/histograms"><button>Switch to Histogram View</button></a>
     	<a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a>
