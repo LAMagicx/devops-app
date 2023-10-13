@@ -16,6 +16,9 @@ to remove the .env file from staging (commiting)
     git rm .env --cached
     git commit -m "Stopped tracking .env File"
 
+## Tests
+	run test with `python3 test_spotify_app.py`
+	
 ### Todo
 
 - add mongodb client to the app
