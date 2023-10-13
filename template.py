@@ -180,7 +180,64 @@ SEARCHRESULTS = '''
     </style>
 </head>
 <body>
+    <h1>Search Results</h1>
+    <div id="histogram-button">
+        <a href="/histograms"><button>Switch to Histogram View</button></a>
+        <a href="/genre-bar-graph"><button>View Genre Bar Graph</button></a> <!-- New button for the bar graph page -->
+        <a href="/"><button>Back to Raw Data</button></a>
+    </div>
+<!--- Search bar --->
+    <form action="/query" onsubmit="searchSongs();">
+        <label for="search_query">Search:</label>
+        <input type="text" id="search_query" name="search_query">
+        <input type="submit" value="Submit">
+    </form>
+    <script>
+    console.log(data.toString())
+    </script>
+    {% if data.empty %}
+        <p>No results found.</p>
+    {% else %}
+        <table>
+            <tr>
+                {% for key, _ in data[0].items() %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+            {% for document in data %}
+                <tr>
+                    {% for key, value in document.items() %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    <script>
+        function searchSongs() {
+            const searchQuery = document.getElementById('search_query').value;
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tr');
+
+            for (let i = 1; i < rows.length; i++) {  // Start from 1 to skip the header row
+                const trackName = rows[i].querySelector('td:first-child').textContent.toLowerCase();
+                if (trackName.includes(searchQuery.toLowerCase())) {
+                    rows[i].style.display = 'table-row';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+    <div id="search-results">
+        <!-- Search results will be displayed here -->
+    </div>
+    
+</body>
+</html>
 '''
+
 PLAYLIST = '''
 <!DOCTYPE html>
 <html>
